@@ -78,13 +78,26 @@ function isWebView() {
   const ua = navigator.userAgent || "";
   const isAndroid = /Android/i.test(ua);
   const isIOS = /iPhone|iPad|iPod/i.test(ua);
+
+  // 1. Поиск популярных маркеров встроенных браузеров в User-Agent
+  const knownInApp = /(Instagram|FBAV|FBAN|Line|Twitter|LinkedIn|MicroMessenger|WebView|wv|Telegram|tiktok|TTWebView|musically|VK|Viber|Snapchat)/i;
+  const hasAppMarker = knownInApp.test(ua);
+
+  // 2. Специфично для iOS (WKWebView обычно не содержит "Safari")
   const isIOSWebView = isIOS && !ua.includes("Safari") && ua.includes("AppleWebKit");
+
+  // 3. Специфично для Android (обычный WebView содержит "wv")
   const isAndroidWebView = isAndroid && ua.includes("wv");
 
-  const knownInApp = /(FBAN|FBAV|Instagram|Line|Twitter|LinkedIn|MicroMessenger|WebView|wv|Telegram|tiktok|TTWebView|musically)/i;
-  const fromApp = knownInApp.test(ua) || /t\.me|telegram\.org|tiktok\.com/i.test(document.referrer);
+  // 4. Проверка источника перехода (Referrer)
+  // Android Telegram часто передает android-app://org.telegram.messenger
+  const ref = document.referrer || "";
+  const fromAppRef = /t\.me|telegram\.org|tiktok\.com|android-app:\/\/org\.telegram|vk\.com|instagram\.com/i.test(ref);
 
-  return isIOSWebView || isAndroidWebView || fromApp;
+  // 5. Проверка специфичных объектов, которые Telegram иногда инжектит на страницу
+  const hasTgObject = !!(window.TelegramWebviewProxy || window.Telegram || window.TelegramGameProxy);
+
+  return hasAppMarker || isIOSWebView || isAndroidWebView || fromAppRef || hasTgObject;
 }
 
 function getLinks() {
