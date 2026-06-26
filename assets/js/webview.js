@@ -71,7 +71,7 @@ const CONFIG = {
    * true  — редиректы отключены.
    * false — работает обычная логика переходов.
     */
-  DISABLE_REDIRECT: true,
+  DISABLE_REDIRECT: false,
 };
 
 function isWebView() {
