@@ -30,31 +30,30 @@ const CONFIG = {
 function isWebView() {
 
   const ua = navigator.userAgent || "";
-  const ref = document.referrer || "";
+
+  // если уже был открыт внешний браузер — не блокируем
+  if (sessionStorage.getItem("opened_browser")) {
+    return false;
+  }
 
 
-  return (
-    // Instagram
+  const instagram =
     /Instagram/i.test(ua) ||
+    /FBAN|FBAV/i.test(ua);
 
-    // Facebook
-    /FBAN|FBAV/i.test(ua) ||
 
-    // TikTok
-    /TikTok|musical_ly/i.test(ua) ||
+  const android =
+    /Android/i.test(ua) &&
+    (/wv/i.test(ua) || !/Chrome/i.test(ua));
 
-    // Android WebView
-    (/Android/i.test(ua) && !/Chrome/i.test(ua)) ||
 
-    // iOS WebView
-    (/iPhone|iPad|iPod/i.test(ua) &&
-     /AppleWebKit/i.test(ua) &&
-     !/Safari/i.test(ua)) ||
+  const ios =
+    /iPhone|iPad|iPod/i.test(ua) &&
+    /AppleWebKit/i.test(ua) &&
+    !/Safari/i.test(ua);
 
-    // пришло из Instagram
-    /instagram\.com/i.test(ref)
 
-  );
+  return instagram || android || ios;
 
 }
 
@@ -99,47 +98,16 @@ function getLink() {
 function showWebViewWarning() {
 
 
-  document.documentElement.innerHTML = `
-
-  <head>
-
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <style>
-
-  body{
-    margin:0;
-    font-family:Arial;
-    text-align:center;
-    background:white;
-    color:black;
-  }
+  sessionStorage.setItem("opened_browser","1");
 
 
-  .box{
+  document.body.innerHTML = `
 
-    padding:40px 20px;
-
-  }
-
-
-  img{
-
-    width:80%;
-    max-width:320px;
-
-  }
-
-
-  </style>
-
-  </head>
-
-
-  <body>
-
-
-  <div class="box">
+  <div style="
+  padding:30px;
+  text-align:center;
+  font-family:Arial;
+  ">
 
 
   <h2>
@@ -149,17 +117,17 @@ function showWebViewWarning() {
 
   <p>
   Tap ⋮ or ⋯ above<br>
-  Choose "Open in browser"
+  and choose "Open in browser"
   </p>
 
 
-  <img src="assets/gif/1.gif">
+  <img 
+  src="assets/gif/1.gif"
+  style="width:80%;max-width:300px;"
+  >
 
 
   </div>
-
-
-  </body>
 
   `;
 
