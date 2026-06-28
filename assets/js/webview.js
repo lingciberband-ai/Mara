@@ -167,49 +167,49 @@ function getLinks() {
 
 function showWebViewWarning() {
   const msg = document.createElement("div");
+  msg.style.cssText = "position:fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:9999; padding:20px; text-align:center; box-sizing:border-box;";
   msg.innerHTML = `
-    <div style="padding: 20px; font-family: sans-serif; text-align: center;">
-      <h2>Open in browser</h2>
-      <p>You are inside an in-app browser.<br>Please tap <b>⋮</b> or <b>⋯</b> above and choose<br><b>"Open in browser"</b>.</p>
-      <img class="gif" src="assets/gif/1.gif" alt="animation" style="width: 80%; max-width: 300px;" />
-      <img class="arrow" src="assets/png/1.png" alt="arrow" style="position: absolute; top: 2vh; right: 2vw; width: 40px;" />
-    </div>
+    <h2>Open in browser</h2>
+    <p>Вы находитесь в приложении. Нажмите на три точки сверху и выберите "Открыть в браузере".</p>
+    <div id="debug-info" style="margin-top:20px; font-size:12px; color:gray; text-align:left;"></div>
   `;
-  document.body.innerHTML = "";
-  document.body.appendChild(msg);
+  document.body.appendChild(msg); // НЕ стираем body, а добавляем поверх
+  
+  // Отладка
+  document.getElementById('debug-info').innerText = 
+    "UA: " + navigator.userAgent.substring(0, 50) + "...\n" +
+    "IsWebView: " + isWebView();
 }
 
 function redirectOrLoad() {
-  const { ENABLE_WEBVIEW_CHECK, REDIRECT_IN_APP, FALLBACK_TIMEOUT, WEBVIEW_MESSAGE, DISABLE_REDIRECT } = CONFIG;
+  const { ENABLE_WEBVIEW_CHECK, REDIRECT_IN_APP, FALLBACK_TO_WEB, FALLBACK_TIMEOUT, WEBVIEW_MESSAGE, DISABLE_REDIRECT } = CONFIG;
   const { appUrl, webUrl } = getLinks();
 
   if (DISABLE_REDIRECT) return;
 
-  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
   const inWebView = ENABLE_WEBVIEW_CHECK && isWebView();
 
-  // 1. Если это WebView — показываем сообщение и выходим
+  // Если определили, что это WebView
   if (inWebView && WEBVIEW_MESSAGE) {
     showWebViewWarning();
     return;
   }
 
-  // 2. Если мы здесь — это обычный браузер
-  // Попробуем сделать редирект через создание невидимой ссылки (самый надежный способ для Android/iOS)
-  if (REDIRECT_IN_APP && isMobile) {
-    const link = document.createElement('a');
-    link.href = appUrl;
-    link.style.display = 'none';
-    document.body.appendChild(link);
-    link.click();
-    
-    // Запускаем таймер на случай, если приложение не открылось
+  // Если это обычный браузер - делаем редирект
+  if (REDIRECT_IN_APP) {
+    window.location.replace(appUrl);
+  }
+
+  if (FALLBACK_TO_WEB) {
     setTimeout(() => {
       window.location.href = webUrl;
     }, FALLBACK_TIMEOUT);
-  } else {
-    // Если не мобилка — просто переход
-    window.location.href = webUrl;
   }
 }
 
+// Запуск
+document.addEventListener("DOMContentLoaded", () => {
+  if (!CONFIG.DISABLE_REDIRECT) {
+    redirectOrLoad();
+  }
+  });
