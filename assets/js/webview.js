@@ -76,14 +76,18 @@ const CONFIG = {
 
 function isWebView() {
   const ua = navigator.userAgent || "";
-  const isAndroid = /Android/i.test(ua);
-  const isIOS = /iPhone|iPad|iPod/i.test(ua);
-  const isIOSWebView = isIOS && !ua.includes("Safari") && ua.includes("AppleWebKit");
-  const isAndroidWebView = isAndroid && ua.includes("wv");
 
-  const knownInApp = /(FBAN|FBAV|Instagram|Line|Twitter|LinkedIn|MicroMessenger|WebView|wv|Telegram|tiktok|TTWebView|musically)/i;
-  const fromApp = knownInApp.test(ua) || /t\.me|telegram\.org|tiktok\.com|vk\.com|instagram\.com/i.test(document.referrer);
-  return isIOSWebView || isAndroidWebView || fromApp;
+  const isAndroidWebView = /Android/i.test(ua) && /; wv\)/i.test(ua);
+
+  const isIOSWebView =
+    /iPhone|iPad|iPod/i.test(ua) &&
+    /AppleWebKit/i.test(ua) &&
+    !/Safari/i.test(ua);
+
+  const inAppBrowser =
+    /(FBAN|FBAV|Instagram|Line|Twitter|LinkedIn|MicroMessenger|Telegram|tiktok|TTWebView|musically)/i.test(ua);
+
+  return isAndroidWebView || isIOSWebView || inAppBrowser;
 }
 
 function getLinks() {
@@ -106,12 +110,10 @@ function getLinks() {
         webUrl: `https://t.me/${USERNAME}`
       };
     case "custom":
-      return {
-        appUrl: CUSTOM_LINK,
-        webUrl: CUSTOM_LINK
-      };
-    default:
-      return { appUrl: "", webUrl: "" };
+  return {
+    appUrl: "",
+    webUrl: CUSTOM_LINK
+  };
   }
 }
 
@@ -147,13 +149,16 @@ function redirectOrLoad() {
     return;
   }
 
-  if (REDIRECT_IN_APP) {
-    if (isIOS) {
-      window.location.replace(appUrl);
-    } else if (isAndroid) {
-      window.location.href = appUrl;
-    }
+  if (REDIRECT_IN_APP && appUrl) {
+  if (isIOS) {
+    window.location.href = appUrl;
   }
+
+  if (isAndroid) {
+    window.location.href = appUrl;
+  }
+}
+  
 
   if (FALLBACK_TO_WEB) {
     setTimeout(() => {
