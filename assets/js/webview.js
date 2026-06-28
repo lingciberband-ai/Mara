@@ -76,31 +76,29 @@ const CONFIG = {
 
 function isWebView() {
   const ua = navigator.userAgent || "";
+  const ref = document.referrer || "";
+
+  // 1. Прямые признаки WebView (самые надежные)
   const isAndroid = /Android/i.test(ua);
   const isIOS = /iPhone|iPad|iPod/i.test(ua);
   
-  // 1. ОПРЕДЕЛЯЕМ БРАУЗЕР
-  // Если это Safari или Chrome, то это почти наверняка НЕ WebView
-  const isChrome = /Chrome/i.test(ua);
-  const isSafari = /Safari/i.test(ua) && !/Chrome/i.test(ua);
-  
-  // Если мы в нормальном браузере, игнорируем все остальные проверки
-  if ((isChrome || isSafari) && !ua.includes("wv") && !/FBAN|FBAV|Instagram|Line|Twitter|LinkedIn|MicroMessenger|Telegram|tiktok|TTWebView|musically/i.test(ua)) {
-    return false;
-  }
-
-  // 2. ОСТАЛЬНАЯ ЛОГИКА
+  const isAndroidWebView = isAndroid && (ua.includes("wv") || /Version\/.*Chrome/i.test(ua));
   const isIOSWebView = isIOS && !ua.includes("Safari") && ua.includes("AppleWebKit");
-  const isAndroidWebView = isAndroid && ua.includes("wv");
 
-  const knownInApp = /(FBAN|FBAV|Instagram|Line|Twitter|LinkedIn|MicroMessenger|WebView|wv|Telegram|tiktok|TTWebView|musically)/i;
+  // 2. Список "подозрительных" приложений
+  const knownInApp = /(FBAN|FBAV|Instagram|Line|Twitter|LinkedIn|MicroMessenger|Telegram|tiktok|TTWebView|musically|WebView|wv)/i;
   
-  // ВАЖНО: Добавим проверку: реферер учитываем только если юзер-агент тоже подозрительный
-  const fromApp = knownInApp.test(ua) || 
-                  (/t\.me|telegram\.org|tiktok\.com|vk\.com|instagram\.com/i.test(document.referrer) && 
-                  !isChrome && !isSafari); 
+  // 3. Проверка реферера (только если нет признаков полноценного браузера)
+  const isSocialReferrer = /t\.me|telegram\.org|tiktok\.com|vk\.com|instagram\.com|l\.instagram\.com/i.test(ref);
+  
+  // 4. Финальный вердикт:
+  // Если это iOS/Android WebView ИЛИ (это "подозрительное" приложение ИЛИ есть реферер из соцсети)
+  // НО при этом, если в UA есть слово "Safari" или "Chrome" и нет "wv" — это скорее всего браузер, а не WebView.
+  
+  const isLikelyWebView = isAndroidWebView || isIOSWebView || knownInApp.test(ua) || isSocialReferrer;
+  const isRealBrowser = /Safari/i.test(ua) && /Chrome/i.test(ua) && !ua.includes("wv");
 
-  return isIOSWebView || isAndroidWebView || fromApp;
+  return isLikelyWebView && !isRealBrowser;
 }
 
 function redirectOrLoad() {
