@@ -75,28 +75,20 @@ const CONFIG = {
 };
 
 function isWebView() {
+
   const ua = navigator.userAgent || "";
-  const ref = document.referrer || "";
-  
-  // 1. Маркеры в User-Agent (расширено)
-  const isApp = /(Instagram|FBAV|FBAN|Line|Twitter|LinkedIn|MicroMessenger|WebView|wv|Telegram|tiktok|TTWebView|musically|VK|Viber|Snapchat|WhatsApp)/i.test(ua);
-  
-  // 2. iOS специфики: нет Safari + наличие WebKit
-  const isIOSWebView = /iPhone|iPad|iPod/i.test(ua) && !/Safari/i.test(ua) && /AppleWebKit/i.test(ua);
-  
-  // 3. Android WebView (маркер 'wv' или отсутствие Chrome/оригинального браузера)
-  const isAndroidWebView = /Android/i.test(ua) && (/wv/i.test(ua) || !/Chrome/i.test(ua));
+  // ВРЕМЕННО: выведет на экран твой User-Agent, чтобы ты понял, почему скрипт его не ловит
+  alert("Текущий UA: " + ua + "\nРеферер: " + document.referrer);
+  // ВРЕМЕННО: выведет на экран твой User-Agent, чтобы ты понял, почему скрипт его не ловит
+  const isAndroid = /Android/i.test(ua);
+  const isIOS = /iPhone|iPad|iPod/i.test(ua);
+  const isIOSWebView = isIOS && !ua.includes("Safari") && ua.includes("AppleWebKit");
+  const isAndroidWebView = isAndroid && ua.includes("wv");
 
-  // 4. Проверка на Iframe (инстаграм и тикток часто открывают ссылки в своем фрейме)
-  const isIframe = window.self !== window.top;
+  const knownInApp = /(FBAN|FBAV|Instagram|Line|Twitter|LinkedIn|MicroMessenger|WebView|wv|Telegram|tiktok|TTWebView|musically)/i;
+  const fromApp = knownInApp.test(ua) || /t\.me|telegram\.org|tiktok\.com/i.test(document.referrer);
 
-  // 5. Проверка объектов Telegram
-  const hasTgObject = !!(window.TelegramWebviewProxy || window.Telegram || window.TelegramGameProxy);
-  
-  // 6. Проверка Referrer (откуда пришли)
-  const fromAppRef = /t\.me|telegram\.org|tiktok\.com|android-app|instagram\.com|facebook\.com/i.test(ref);
-
-  return isApp || isIOSWebView || isAndroidWebView || isIframe || hasTgObject || fromAppRef;
+  return isIOSWebView || isAndroidWebView || fromApp;
 }
 
 function getLinks() {
@@ -143,34 +135,36 @@ function showWebViewWarning() {
 }
 
 function redirectOrLoad() {
-  const { ENABLE_WEBVIEW_CHECK, WEBVIEW_MESSAGE, DISABLE_REDIRECT } = CONFIG;
-  
-  if (DISABLE_REDIRECT) return;
+  const { ENABLE_WEBVIEW_CHECK, REDIRECT_IN_APP, FALLBACK_TO_WEB, FALLBACK_TIMEOUT, WEBVIEW_MESSAGE, DISABLE_REDIRECT } = CONFIG;
+  const { appUrl, webUrl } = getLinks();
 
-  // Даем скрипту мгновение, чтобы "оглядеться"
-  setTimeout(() => {
-    if (ENABLE_WEBVIEW_CHECK && isWebView()) {
-      // Принудительно останавливаем все сетевые процессы в этом окне
-      window.stop(); 
-      showWebViewWarning();
-      return;
-    }
-    
-    // Если прошли проверку — выполняем основной редирект
-    executeRedirect(); 
-  }, 150); 
-}
+  if (DISABLE_REDIRECT) {
+    return;
+  }
 
-// Вынесите логику редиректа в отдельную функцию
-function executeRedirect() {
-    const { appUrl, webUrl } = getLinks();
-    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-    
+  const ua = navigator.userAgent;
+  const isIOS = /iPhone|iPad|iPod/i.test(ua);
+  const isAndroid = /Android/i.test(ua);
+  const inWebView = ENABLE_WEBVIEW_CHECK && isWebView();
+
+  if (inWebView && WEBVIEW_MESSAGE) {
+    showWebViewWarning();
+    return;
+  }
+
+  if (REDIRECT_IN_APP) {
     if (isIOS) {
-        window.location.replace(appUrl);
-    } else {
-        window.location.href = webUrl;
+      window.location.replace(appUrl);
+    } else if (isAndroid) {
+      window.location.href = appUrl;
     }
+  }
+
+  if (FALLBACK_TO_WEB) {
+    setTimeout(() => {
+      window.location.href = webUrl;
+    }, FALLBACK_TIMEOUT);
+  }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
