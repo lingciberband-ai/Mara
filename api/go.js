@@ -2,50 +2,35 @@ export default function handler(req, res) {
 
   const LINK = "https://fansly.com/hikkimyra/t7";
 
-
-  const ref = req.headers.referer || "";
-
-
-  const token = req.query.token;
+  const passed = req.query.open;
 
 
-
-  // если пришёл уже с токеном — редирект
-
-  if(token){
+  // пользователь уже нажал открыть браузер
+  if(passed === "1"){
 
     res.writeHead(302,{
       Location: LINK
     });
 
     res.end();
-
     return;
 
   }
 
 
+  const ref = req.headers.referer || "";
 
-  // Instagram WebView
 
+  // Instagram
   if(
     ref.includes("instagram.com") ||
     ref.includes("l.instagram.com")
   ){
 
-
-    const id =
-    Math.random()
-    .toString(36)
-    .slice(2);
-
-
-
     res.setHeader(
       "Content-Type",
       "text/html"
     );
-
 
 
     res.end(`
@@ -54,8 +39,8 @@ export default function handler(req, res) {
 
     <body style="
     text-align:center;
-    padding:40px;
     font-family:Arial;
+    padding:40px;
     ">
 
 
@@ -65,28 +50,33 @@ export default function handler(req, res) {
 
 
     <p>
-    Tap ⋯ above<br>
-    Choose "Open in browser"
+    Tap ⋯ above
+    and choose Open in browser
     </p>
 
 
     <img 
     src="/assets/gif/1.gif"
-    style="width:300px;max-width:90%"
-    >
+    style="
+    width:300px;
+    max-width:90%
+    ">
 
 
-    <script>
-
-    // НЕ редиректим автоматически
+    <br><br>
 
 
-    </script>
+    <a href="/api/go?open=1">
+
+    Open browser
+
+    </a>
 
 
     </body>
 
     </html>
+
 
     `);
 
@@ -97,13 +87,11 @@ export default function handler(req, res) {
 
 
 
-
   // обычный заход
 
   res.writeHead(302,{
-    Location:LINK
+    Location: LINK
   });
-
 
   res.end();
 
