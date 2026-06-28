@@ -1,108 +1,69 @@
-const CONFIG = {
-  LINK: "https://fansly.com/hikkimyra/t7",
-  ENABLE_WEBVIEW_CHECK: true,
-  DISABLE_REDIRECT: false
-};
+const LINK = "https://fansly.com/hikkimyra/t7";
 
 
-function isWebView() {
+function isInstagramWebView() {
 
-  const ua = navigator.userAgent || "";
+    const ua = navigator.userAgent || "";
 
-  return (
-    /Instagram/i.test(ua) ||
-    /FBAN|FBAV/i.test(ua) ||
-    /TikTok/i.test(ua) ||
-    /Line/i.test(ua) ||
-
-    // Android WebView
-    (/Android/i.test(ua) && /wv/i.test(ua)) ||
-
-    // iOS WebView
-    (/iPhone|iPad|iPod/i.test(ua) &&
-     /AppleWebKit/i.test(ua) &&
-     !/Safari/i.test(ua))
-  );
+    return (
+        ua.includes("Instagram") ||
+        ua.includes("FBAN") ||
+        ua.includes("FBAV") ||
+        ua.includes("Instagram")
+    );
 
 }
 
 
 
-function showWebViewWarning(){
+function showMessage(){
 
-  document.body.innerHTML = `
+    document.body.innerHTML = `
+    
+    <div style="
+        text-align:center;
+        padding:40px;
+        font-family:Arial;
+    ">
 
-  <div style="
-  text-align:center;
-  padding:30px;
-  font-family:Arial;
-  ">
+    <h2>Open in browser</h2>
 
+    <p>
+    Tap ⋮ or ⋯ above<br>
+    and choose Open in browser
+    </p>
 
-  <h2>Open in browser</h2>
+    <img 
+    src="assets/gif/1.gif"
+    style="width:300px;max-width:90%;">
 
-
-  <p>
-  Tap ⋮ or ⋯ above<br>
-  Choose "Open in browser"
-  </p>
-
-
-  <img 
-  src="assets/gif/1.gif"
-  style="max-width:300px;width:80%"
-  >
-
-
-  </div>
-
-  `;
+    </div>
+    
+    `;
 
 }
 
 
 
+(function(){
 
-function redirect(){
-
-  if(CONFIG.DISABLE_REDIRECT)
-    return;
+    console.log("UA:", navigator.userAgent);
 
 
-  console.log(navigator.userAgent);
-  console.log("WEBVIEW:", isWebView());
+    if(isInstagramWebView()){
+
+        showMessage();
+
+        return;
+
+    }
 
 
+    setTimeout(()=>{
 
-  // если уже открыт через внешний браузер
-  if(location.search.includes("browser=1")){
+        window.location.href = LINK;
 
-    window.location.replace(CONFIG.LINK);
-    return;
-
-  }
+    },500);
 
 
-
-  if(
-    CONFIG.ENABLE_WEBVIEW_CHECK &&
-    isWebView()
-  ){
-
-    showWebViewWarning();
-    return;
-
-  }
-
-
-
-  window.location.replace(
-    CONFIG.LINK
-  );
-
-}
-
-
-
-
-window.onload = redirect;
+})();
