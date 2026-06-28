@@ -76,59 +76,15 @@ const CONFIG = {
 
 function isWebView() {
   const ua = navigator.userAgent || "";
-  const ref = document.referrer || "";
-
-  // 1. Прямые признаки WebView (самые надежные)
   const isAndroid = /Android/i.test(ua);
   const isIOS = /iPhone|iPad|iPod/i.test(ua);
-  
-  const isAndroidWebView = isAndroid && (ua.includes("wv") || /Version\/.*Chrome/i.test(ua));
   const isIOSWebView = isIOS && !ua.includes("Safari") && ua.includes("AppleWebKit");
+  const isAndroidWebView = isAndroid && ua.includes("wv");
 
-  // 2. Список "подозрительных" приложений
-  const knownInApp = /(FBAN|FBAV|Instagram|Line|Twitter|LinkedIn|MicroMessenger|Telegram|tiktok|TTWebView|musically|WebView|wv)/i;
-  
-  // 3. Проверка реферера (только если нет признаков полноценного браузера)
-  const isSocialReferrer = /t\.me|telegram\.org|tiktok\.com|vk\.com|instagram\.com|l\.instagram\.com/i.test(ref);
-  
-  // 4. Финальный вердикт:
-  // Если это iOS/Android WebView ИЛИ (это "подозрительное" приложение ИЛИ есть реферер из соцсети)
-  // НО при этом, если в UA есть слово "Safari" или "Chrome" и нет "wv" — это скорее всего браузер, а не WebView.
-  
-  const isLikelyWebView = isAndroidWebView || isIOSWebView || knownInApp.test(ua) || isSocialReferrer;
-  const isRealBrowser = /Safari/i.test(ua) && /Chrome/i.test(ua) && !ua.includes("wv");
+  const knownInApp = /(FBAN|FBAV|Instagram|Line|Twitter|LinkedIn|MicroMessenger|WebView|wv|Telegram|tiktok|TTWebView|musically)/i;
+  const fromApp = knownInApp.test(ua) || /t\.me|telegram\.org|tiktok\.com/i.test(document.referrer);
 
-  return isLikelyWebView && !isRealBrowser;
-}
-
-function redirectOrLoad() {
-  const { ENABLE_WEBVIEW_CHECK, REDIRECT_IN_APP, FALLBACK_TO_WEB, FALLBACK_TIMEOUT, WEBVIEW_MESSAGE, DISABLE_REDIRECT } = CONFIG;
-  const { appUrl, webUrl } = getLinks();
-
-  if (DISABLE_REDIRECT) return;
-
-  // 1. ПРОВЕРКА (Определяем статус один раз)
-  const inWebView = ENABLE_WEBVIEW_CHECK && isWebView();
-
-  // 2. Если WebView — показываем сообщение и строго выходим из функции
-  if (inWebView && WEBVIEW_MESSAGE) {
-    showWebViewWarning();
-    return; // ВАЖНО: это "stop" для всего скрипта
-  }
-
-  // 3. ЕСЛИ МЫ НЕ В WEBVIEW — запускаем редирект
-  // Добавим небольшую задержку (100мс), чтобы браузер "успел" осознать, что он не в WebView
-  setTimeout(() => {
-    if (REDIRECT_IN_APP) {
-      window.location.replace(appUrl);
-    }
-    
-    if (FALLBACK_TO_WEB) {
-      setTimeout(() => {
-        window.location.replace(webUrl);
-      }, FALLBACK_TIMEOUT);
-    }
-  }, 100); 
+  return isIOSWebView || isAndroidWebView || fromApp;
 }
 
 function getLinks() {
@@ -162,37 +118,42 @@ function getLinks() {
 
 function showWebViewWarning() {
   const msg = document.createElement("div");
-  msg.style.cssText = "position:fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:9999; padding:20px; text-align:center; box-sizing:border-box;";
   msg.innerHTML = `
-    <h2>Open in browser</h2>
-    <p>Вы находитесь в приложении. Нажмите на три точки сверху и выберите "Открыть в браузере".</p>
-    <div id="debug-info" style="margin-top:20px; font-size:12px; color:gray; text-align:left;"></div>
+    <div style="padding: 20px; font-family: sans-serif; text-align: center;">
+      <h2>Open in browser</h2>
+      <p>You are inside an in-app browser.<br>Please tap <b>⋮</b> or <b>⋯</b> above and choose<br><b>"Open in browser"</b>.</p>
+      <img class="gif" src="assets/gif/1.gif" alt="animation" style="width: 80%; max-width: 300px;" />
+      <img class="arrow" src="assets/png/1.png" alt="arrow" style="position: absolute; top: 2vh; right: 2vw; width: 40px;" />
+    </div>
   `;
-  document.body.appendChild(msg); // НЕ стираем body, а добавляем поверх
-  
-  // Отладка
-  document.getElementById('debug-info').innerText = 
-    "UA: " + navigator.userAgent.substring(0, 50) + "...\n" +
-    "IsWebView: " + isWebView();
+  document.body.innerHTML = "";
+  document.body.appendChild(msg);
 }
 
 function redirectOrLoad() {
   const { ENABLE_WEBVIEW_CHECK, REDIRECT_IN_APP, FALLBACK_TO_WEB, FALLBACK_TIMEOUT, WEBVIEW_MESSAGE, DISABLE_REDIRECT } = CONFIG;
   const { appUrl, webUrl } = getLinks();
 
-  if (DISABLE_REDIRECT) return;
+  if (DISABLE_REDIRECT) {
+    return;
+  }
 
+  const ua = navigator.userAgent;
+  const isIOS = /iPhone|iPad|iPod/i.test(ua);
+  const isAndroid = /Android/i.test(ua);
   const inWebView = ENABLE_WEBVIEW_CHECK && isWebView();
 
-  // Если определили, что это WebView
   if (inWebView && WEBVIEW_MESSAGE) {
     showWebViewWarning();
     return;
   }
 
-  // Если это обычный браузер - делаем редирект
   if (REDIRECT_IN_APP) {
-    window.location.replace(appUrl);
+    if (isIOS) {
+      window.location.replace(appUrl);
+    } else if (isAndroid) {
+      window.location.href = appUrl;
+    }
   }
 
   if (FALLBACK_TO_WEB) {
@@ -202,9 +163,17 @@ function redirectOrLoad() {
   }
 }
 
-// Запуск
 document.addEventListener("DOMContentLoaded", () => {
+  const { webUrl } = getLinks();
+  const button = document.querySelector(".button");
+
+  if (button) {
+    button.onclick = () => {
+      window.location.href = webUrl;
+    };
+  }
+
   if (!CONFIG.DISABLE_REDIRECT) {
     redirectOrLoad();
   }
-  });
+});
