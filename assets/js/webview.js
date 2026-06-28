@@ -75,27 +75,15 @@ const CONFIG = {
 };
 
 function isWebView() {
-  const ua = navigator.userAgent || navigator.vendor || window.opera;
 
-  return (
-    // Android WebView
-    /wv/.test(ua) ||
+ const ua = navigator.userAgent || "";
 
-    // Android app browsers
-    (/Android/.test(ua) && !/Chrome\/[0-9]/.test(ua)) ||
-
-    // iOS WebView
-    (/iPhone|iPad|iPod/.test(ua) && !/Safari/.test(ua)) ||
-
-    // Instagram
-    /Instagram/i.test(ua) ||
-
-    // Facebook
-    /FBAN|FBAV/i.test(ua) ||
-
-    // TikTok
-    /TikTok|musical_ly/i.test(ua)
-  );
+ return (
+   /Instagram/i.test(ua) ||
+   /FBAN|FBAV/i.test(ua) ||
+   /wv/i.test(ua) ||
+   (window.navigator.standalone === false && /iPhone|iPad/.test(ua) && !/Safari/.test(ua))
+ );
 }
 
 function getLinks() {
