@@ -1,31 +1,20 @@
 const LINK = "https://fansly.com/hikkimyra/t7";
 
 
-function isInstagramWebView(){
-
-    const ref = document.referrer || "";
+function fromInstagram(){
 
     return (
-        ref.includes("instagram.com") ||
-        ref.includes("l.instagram.com")
+        document.referrer.includes("instagram.com") ||
+        document.referrer.includes("l.instagram.com")
     );
 
 }
 
 
 
-function hasOpenedBrowser(){
+function showedWarning(){
 
-    return document.cookie.includes("opened_browser=1");
-
-}
-
-
-
-function setOpenedBrowser(){
-
-    document.cookie =
-    "opened_browser=1; max-age=600; path=/";
+    return localStorage.getItem("webview_warning") === "1";
 
 }
 
@@ -33,31 +22,37 @@ function setOpenedBrowser(){
 
 function showWarning(){
 
-    setOpenedBrowser();
+
+    localStorage.setItem(
+        "webview_warning",
+        "1"
+    );
 
 
     document.body.innerHTML = `
 
     <div style="
-        text-align:center;
-        padding:40px;
-        font-family:Arial;
+    text-align:center;
+    padding:40px;
+    font-family:Arial;
     ">
 
-        <h2>Open in browser</h2>
-
-        <p>
-        Tap ⋯ above<br>
-        Choose "Open in browser"
-        </p>
+    <h2>
+    Open in browser
+    </h2>
 
 
-        <img 
-        src="assets/gif/1.gif"
-        style="
-        width:300px;
-        max-width:90%;
-        ">
+    <p>
+    Tap ⋯ above<br>
+    Choose "Open in browser"
+    </p>
+
+
+    <img 
+    src="assets/gif/1.gif"
+    style="width:300px;max-width:90%"
+    >
+
 
     </div>
 
@@ -71,15 +66,15 @@ function showWarning(){
 function start(){
 
 
-    console.log("UA:", navigator.userAgent);
-
     console.log("REF:", document.referrer);
+    console.log("FLAG:", showedWarning());
 
 
-    // первый заход из Instagram
+
+    // если это первый заход из Instagram
     if(
-        isInstagramWebView() &&
-        !hasOpenedBrowser()
+        fromInstagram() &&
+        !showedWarning()
     ){
 
         showWarning();
@@ -89,7 +84,12 @@ function start(){
     }
 
 
-    // обычный браузер
+
+    // если уже была показана инструкция
+    localStorage.removeItem(
+        "webview_warning"
+    );
+
 
     window.location.replace(LINK);
 
