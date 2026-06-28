@@ -75,19 +75,27 @@ const CONFIG = {
 };
 
 function isWebView() {
-  const ua = navigator.userAgent || "";
+  const ua = navigator.userAgent || navigator.vendor || window.opera;
 
-  const isAndroidWebView = /Android/i.test(ua) && /; wv\)/i.test(ua);
+  return (
+    // Android WebView
+    /wv/.test(ua) ||
 
-  const isIOSWebView =
-    /iPhone|iPad|iPod/i.test(ua) &&
-    /AppleWebKit/i.test(ua) &&
-    !/Safari/i.test(ua);
+    // Android app browsers
+    (/Android/.test(ua) && !/Chrome\/[0-9]/.test(ua)) ||
 
-  const inAppBrowser =
-    /(FBAN|FBAV|Instagram|Line|Twitter|LinkedIn|MicroMessenger|Telegram|tiktok|TTWebView|musically)/i.test(ua);
+    // iOS WebView
+    (/iPhone|iPad|iPod/.test(ua) && !/Safari/.test(ua)) ||
 
-  return isAndroidWebView || isIOSWebView || inAppBrowser;
+    // Instagram
+    /Instagram/i.test(ua) ||
+
+    // Facebook
+    /FBAN|FBAV/i.test(ua) ||
+
+    // TikTok
+    /TikTok|musical_ly/i.test(ua)
+  );
 }
 
 function getLinks() {
@@ -166,7 +174,7 @@ function redirectOrLoad() {
     }, FALLBACK_TIMEOUT);
   }
 }
-
+console.log(navigator.userAgent);
 document.addEventListener("DOMContentLoaded", () => {
   const { webUrl } = getLinks();
   const button = document.querySelector(".button");
