@@ -180,49 +180,36 @@ function showWebViewWarning() {
 }
 
 function redirectOrLoad() {
-  const { ENABLE_WEBVIEW_CHECK, REDIRECT_IN_APP, FALLBACK_TO_WEB, FALLBACK_TIMEOUT, WEBVIEW_MESSAGE, DISABLE_REDIRECT } = CONFIG;
+  const { ENABLE_WEBVIEW_CHECK, REDIRECT_IN_APP, FALLBACK_TIMEOUT, WEBVIEW_MESSAGE, DISABLE_REDIRECT } = CONFIG;
   const { appUrl, webUrl } = getLinks();
 
-  if (DISABLE_REDIRECT) {
-    return;
-  }
+  if (DISABLE_REDIRECT) return;
 
-  const ua = navigator.userAgent;
-  const isIOS = /iPhone|iPad|iPod/i.test(ua);
-  const isAndroid = /Android/i.test(ua);
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
   const inWebView = ENABLE_WEBVIEW_CHECK && isWebView();
 
+  // 1. Если это WebView — показываем сообщение и выходим
   if (inWebView && WEBVIEW_MESSAGE) {
     showWebViewWarning();
     return;
   }
 
-  if (REDIRECT_IN_APP) {
-    if (isIOS) {
-      window.location.replace(appUrl);
-    } else if (isAndroid) {
-      window.location.href = appUrl;
-    }
-  }
-
-  if (FALLBACK_TO_WEB) {
+  // 2. Если мы здесь — это обычный браузер
+  // Попробуем сделать редирект через создание невидимой ссылки (самый надежный способ для Android/iOS)
+  if (REDIRECT_IN_APP && isMobile) {
+    const link = document.createElement('a');
+    link.href = appUrl;
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    
+    // Запускаем таймер на случай, если приложение не открылось
     setTimeout(() => {
       window.location.href = webUrl;
     }, FALLBACK_TIMEOUT);
+  } else {
+    // Если не мобилка — просто переход
+    window.location.href = webUrl;
   }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  const { webUrl } = getLinks();
-  const button = document.querySelector(".button");
-
-  if (button) {
-    button.onclick = () => {
-      window.location.href = webUrl;
-    };
-  }
-
-  if (!CONFIG.DISABLE_REDIRECT) {
-    redirectOrLoad();
-  }
-});
