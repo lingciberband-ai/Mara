@@ -1,13 +1,13 @@
 const LINK = "https://fansly.com/hikkimyra/t7";
 
 
-function isInstagram(){
+function fromInstagram(){
 
     const ref = document.referrer || "";
 
     return (
-        ref.includes("instagram.com") ||
-        ref.includes("l.instagram.com")
+        ref.includes("l.instagram.com") ||
+        ref.includes("instagram.com")
     );
 
 }
@@ -49,37 +49,17 @@ function start(){
 
 
     console.log("REF:", document.referrer);
+    console.log("UA:", navigator.userAgent);
 
 
 
-    // если это первый заход после Instagram
-    if(isInstagram()){
-
-
-        if(!sessionStorage.getItem("reloaded")){
-
-
-            sessionStorage.setItem(
-                "reloaded",
-                "1"
-            );
-
-
-            setTimeout(()=>{
-
-                location.reload();
-
-            },300);
-
-
-            return;
-
-        }
+    if(fromInstagram()){
 
 
         showWarning();
 
         return;
+
 
     }
 
