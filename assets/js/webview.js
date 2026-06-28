@@ -77,9 +77,9 @@ const CONFIG = {
 function isWebView() {
 
   const ua = navigator.userAgent || "";
-  // ВРЕМЕННО: выведет на экран твой User-Agent, чтобы ты понял, почему скрипт его не ловит
-  alert("Текущий UA: " + ua + "\nРеферер: " + document.referrer);
-  // ВРЕМЕННО: выведет на экран твой User-Agent, чтобы ты понял, почему скрипт его не ловит
+  
+  //alert("Текущий UA: " + ua + "\nРеферер: " + document.referrer);
+  
   const isAndroid = /Android/i.test(ua);
   const isIOS = /iPhone|iPad|iPod/i.test(ua);
   const isIOSWebView = isIOS && !ua.includes("Safari") && ua.includes("AppleWebKit");
