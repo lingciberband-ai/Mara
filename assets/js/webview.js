@@ -1,17 +1,48 @@
 const LINK = "https://fansly.com/hikkimyra/t7";
 
 
+// проверяем только реальный встроенный браузер
 function isInAppBrowser(){
 
     const ua = navigator.userAgent || "";
 
-    return (
-        /Instagram/i.test(ua) ||
-        /FBAN|FBAV/i.test(ua) ||
-        /TikTok/i.test(ua) ||
-        /musical/i.test(ua) ||
-        /Line/i.test(ua)
-    );
+
+    // Android WebView
+    if(
+        /Android/i.test(ua) &&
+        /wv/i.test(ua)
+    ){
+        return true;
+    }
+
+
+    // iOS WebView
+    if(
+        /iPhone|iPad|iPod/i.test(ua) &&
+        /AppleWebKit/i.test(ua) &&
+        !/Safari/i.test(ua)
+    ){
+        return true;
+    }
+
+
+    // Instagram/Facebook внутри приложения
+    if(
+        /Instagram/i.test(ua) &&
+        !/Chrome/i.test(ua)
+    ){
+        return true;
+    }
+
+
+    if(
+        /FBAN|FBAV/i.test(ua)
+    ){
+        return true;
+    }
+
+
+    return false;
 
 }
 
@@ -27,7 +58,11 @@ padding:30px;
 font-family:Arial;
 ">
 
-<h2>Open in browser</h2>
+
+<h2>
+Open in browser
+</h2>
+
 
 <p>
 Tap ⋯ above<br>
@@ -35,62 +70,46 @@ Select "Open in browser"
 </p>
 
 
-<img src="assets/gif/1.gif"
-style="width:300px;max-width:90%">
-
-
-<br><br>
-
-
-<button id="go"
-style="
-padding:15px 30px;
-font-size:18px;
-">
-
-Continue
-
-</button>
+<img 
+src="assets/gif/1.gif"
+style="width:300px;max-width:90%"
+>
 
 
 </div>
 
 `;
 
-
-document
-.getElementById("go")
-.onclick = ()=>{
-
-window.location.href = LINK;
-
-};
-
-
 }
+
 
 
 
 function start(){
 
 
-console.log(
-navigator.userAgent
-);
+console.log("UA:", navigator.userAgent);
 
 
-if(isInAppBrowser()){
+const webview = isInAppBrowser();
 
-showWarning();
 
-return;
+console.log("WEBVIEW:", webview);
+
+
+
+if(webview){
+
+    showWarning();
+
+    return;
 
 }
 
 
-// обычный браузер
+// только обычный браузер
 
-window.location.href = LINK;
+window.location.replace(LINK);
 
 
 }
