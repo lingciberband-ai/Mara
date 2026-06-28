@@ -78,18 +78,27 @@ function isWebView() {
   const ua = navigator.userAgent || "";
   const isAndroid = /Android/i.test(ua);
   const isIOS = /iPhone|iPad|iPod/i.test(ua);
-
-  // 1. ЗАЩИТА ОТ ПК: Встроенных WebView не бывает на компьютерах.
-  // Если это не iOS и не Android, сразу возвращаем false.
-  if (!isAndroid && !isIOS) {
+  
+  // 1. ОПРЕДЕЛЯЕМ БРАУЗЕР
+  // Если это Safari или Chrome, то это почти наверняка НЕ WebView
+  const isChrome = /Chrome/i.test(ua);
+  const isSafari = /Safari/i.test(ua) && !/Chrome/i.test(ua);
+  
+  // Если мы в нормальном браузере, игнорируем все остальные проверки
+  if ((isChrome || isSafari) && !ua.includes("wv") && !/FBAN|FBAV|Instagram|Line|Twitter|LinkedIn|MicroMessenger|Telegram|tiktok|TTWebView|musically/i.test(ua)) {
     return false;
   }
 
+  // 2. ОСТАЛЬНАЯ ЛОГИКА
   const isIOSWebView = isIOS && !ua.includes("Safari") && ua.includes("AppleWebKit");
   const isAndroidWebView = isAndroid && ua.includes("wv");
 
-  const knownInApp = /(FBAN|FBAV|Instagram|Line|Twitter|LinkedIn|MicroMessenger|WebView|wv|Telegram|tiktok|TTWebView|musically|Viber|VK|Snapchat|Discord|YaApp)/i;
-  const fromApp = knownInApp.test(ua) || /t\.me|telegram\.org|tiktok\.com|vk\.com|instagram\.com/i.test(document.referrer);
+  const knownInApp = /(FBAN|FBAV|Instagram|Line|Twitter|LinkedIn|MicroMessenger|WebView|wv|Telegram|tiktok|TTWebView|musically)/i;
+  
+  // ВАЖНО: Добавим проверку: реферер учитываем только если юзер-агент тоже подозрительный
+  const fromApp = knownInApp.test(ua) || 
+                  (/t\.me|telegram\.org|tiktok\.com|vk\.com|instagram\.com/i.test(document.referrer) && 
+                  !isChrome && !isSafari); 
 
   return isIOSWebView || isAndroidWebView || fromApp;
 }
