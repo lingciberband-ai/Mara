@@ -1,48 +1,25 @@
 const LINK = "https://fansly.com/hikkimyra/t7";
 
 
-// проверяем только реальный встроенный браузер
+// проверяем только вход из приложения
 function isInAppBrowser(){
 
     const ua = navigator.userAgent || "";
 
+    return (
+        /Instagram/i.test(ua) ||
+        /FBAN|FBAV/i.test(ua) ||
+        /TikTok/i.test(ua) ||
+        /musical/i.test(ua) ||
 
-    // Android WebView
-    if(
-        /Android/i.test(ua) &&
-        /wv/i.test(ua)
-    ){
-        return true;
-    }
+        // android webview
+        (/Android/i.test(ua) && /wv/i.test(ua)) ||
 
-
-    // iOS WebView
-    if(
-        /iPhone|iPad|iPod/i.test(ua) &&
+        // ios webview
+        (/iPhone|iPad|iPod/i.test(ua) &&
         /AppleWebKit/i.test(ua) &&
-        !/Safari/i.test(ua)
-    ){
-        return true;
-    }
-
-
-    // Instagram/Facebook внутри приложения
-    if(
-        /Instagram/i.test(ua) &&
-        !/Chrome/i.test(ua)
-    ){
-        return true;
-    }
-
-
-    if(
-        /FBAN|FBAV/i.test(ua)
-    ){
-        return true;
-    }
-
-
-    return false;
+        !/Safari/i.test(ua))
+    );
 
 }
 
@@ -50,35 +27,54 @@ function isInAppBrowser(){
 
 function showWarning(){
 
-document.body.innerHTML = `
 
-<div style="
-text-align:center;
-padding:30px;
-font-family:Arial;
-">
+    const browserUrl =
+    window.location.href.split("?")[0] + "?browser=1";
 
 
-<h2>
-Open in browser
-</h2>
+    document.body.innerHTML = `
+
+    <div style="
+    text-align:center;
+    padding:30px;
+    font-family:Arial;
+    ">
 
 
-<p>
-Tap ⋯ above<br>
-Select "Open in browser"
-</p>
+    <h2>
+    Open in browser
+    </h2>
 
 
-<img 
-src="assets/gif/1.gif"
-style="width:300px;max-width:90%"
->
+    <p>
+    Tap ⋯ above<br>
+    Choose "Open in browser"
+    </p>
 
 
-</div>
+    <img 
+    src="assets/gif/1.gif"
+    style="
+    width:300px;
+    max-width:90%;
+    ">
 
-`;
+
+    <br><br>
+
+
+    <a href="${browserUrl}"
+    style="
+    font-size:20px;
+    color:blue;
+    ">
+    Open browser
+    </a>
+
+
+    </div>
+
+    `;
 
 }
 
@@ -88,28 +84,34 @@ style="width:300px;max-width:90%"
 function start(){
 
 
-console.log("UA:", navigator.userAgent);
+    // если это уже браузер после кнопки
+    if(
+        window.location.search.includes("browser=1")
+    ){
+
+        window.location.replace(LINK);
+
+        return;
+
+    }
 
 
-const webview = isInAppBrowser();
+
+    if(isInAppBrowser()){
 
 
-console.log("WEBVIEW:", webview);
+        showWarning();
+
+
+        return;
+
+    }
 
 
 
-if(webview){
+    // обычный браузер
 
-    showWarning();
-
-    return;
-
-}
-
-
-// только обычный браузер
-
-window.location.replace(LINK);
+    window.location.replace(LINK);
 
 
 }
