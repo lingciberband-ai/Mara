@@ -30,28 +30,31 @@ const CONFIG = {
 function isWebView() {
 
   const ua = navigator.userAgent || "";
+  const ref = document.referrer || "";
 
 
-  const instagram =
+  return (
+    // Instagram
     /Instagram/i.test(ua) ||
-    /FBAN|FBAV/i.test(ua);
 
+    // Facebook
+    /FBAN|FBAV/i.test(ua) ||
 
-  const androidWebview =
-    /Android/i.test(ua) &&
-    (
-      /wv/i.test(ua) ||
-      !/Chrome/i.test(ua)
-    );
+    // TikTok
+    /TikTok|musical_ly/i.test(ua) ||
 
+    // Android WebView
+    (/Android/i.test(ua) && !/Chrome/i.test(ua)) ||
 
-  const iosWebview =
-    /iPhone|iPad|iPod/i.test(ua) &&
-    /AppleWebKit/i.test(ua) &&
-    !/Safari/i.test(ua);
+    // iOS WebView
+    (/iPhone|iPad|iPod/i.test(ua) &&
+     /AppleWebKit/i.test(ua) &&
+     !/Safari/i.test(ua)) ||
 
+    // пришло из Instagram
+    /instagram\.com/i.test(ref)
 
-  return instagram || androidWebview || iosWebview;
+  );
 
 }
 
@@ -169,42 +172,21 @@ function showWebViewWarning() {
 
 function redirect() {
 
-
-  if (CONFIG.DISABLE_REDIRECT) return;
-
-
-  const link = getLink();
-
-
-
   console.log("UA:", navigator.userAgent);
-
-  console.log("WEBVIEW:", isWebView());
-
-
-
-  if (
-    CONFIG.ENABLE_WEBVIEW_CHECK &&
-    isWebView()
-  ) {
+  console.log("REF:", document.referrer);
+  console.log("WV:", isWebView());
 
 
-    if(CONFIG.WEBVIEW_MESSAGE){
+  if (isWebView()) {
 
-      showWebViewWarning();
+    showWebViewWarning();
 
-    }
-
-
-    return;
+    return false;
 
   }
 
 
-
-  setTimeout(()=>{
-    window.location.href = link;
-  }, CONFIG.REDIRECT_DELAY);
+  window.location.href = getLink();
 
 }
 
