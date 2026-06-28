@@ -1,103 +1,111 @@
-export default function handler(req,res){
+export default function handler(req, res) {
 
-const LINK="https://fansly.com/hikkimyra/t7";
-
-
-const ref=req.headers.referer || "";
-
-const cookie=req.headers.cookie || "";
+  const LINK = "https://fansly.com/hikkimyra/t7";
 
 
-// если уже проходил страницу
-if(cookie.includes("opened=1")){
+  const ref = req.headers.referer || "";
 
 
-res.writeHead(302,{
-Location:LINK
-});
-
-
-res.end();
-
-return;
-
-}
+  const token = req.query.token;
 
 
 
+  // если пришёл уже с токеном — редирект
 
-// первый вход из Instagram
+  if(token){
 
-if(
-ref.includes("instagram.com") ||
-ref.includes("l.instagram.com")
-){
+    res.writeHead(302,{
+      Location: LINK
+    });
 
+    res.end();
 
+    return;
 
-res.setHeader(
-"Set-Cookie",
-"opened=1; Max-Age=600; Path=/; SameSite=Lax"
-);
-
-
-
-res.setHeader(
-"Content-Type",
-"text/html"
-);
+  }
 
 
 
-res.end(`
+  // Instagram WebView
 
-<html>
-
-<body style="
-text-align:center;
-font-family:Arial;
-padding:40px;
-">
+  if(
+    ref.includes("instagram.com") ||
+    ref.includes("l.instagram.com")
+  ){
 
 
-<h2>
-Open in browser
-</h2>
-
-
-<p>
-Tap ⋯ above<br>
-Choose "Open in browser"
-</p>
-
-
-<img 
-src="/assets/gif/1.gif"
-style="width:300px;max-width:90%"
->
-
-
-</body>
-
-</html>
-
-`);
-
-
-return;
-
-}
+    const id =
+    Math.random()
+    .toString(36)
+    .slice(2);
 
 
 
-// обычный браузер
+    res.setHeader(
+      "Content-Type",
+      "text/html"
+    );
 
-res.writeHead(302,{
-Location:LINK
-});
 
 
-res.end();
+    res.end(`
+
+    <html>
+
+    <body style="
+    text-align:center;
+    padding:40px;
+    font-family:Arial;
+    ">
+
+
+    <h2>
+    Open in browser
+    </h2>
+
+
+    <p>
+    Tap ⋯ above<br>
+    Choose "Open in browser"
+    </p>
+
+
+    <img 
+    src="/assets/gif/1.gif"
+    style="width:300px;max-width:90%"
+    >
+
+
+    <script>
+
+    // НЕ редиректим автоматически
+
+
+    </script>
+
+
+    </body>
+
+    </html>
+
+    `);
+
+
+    return;
+
+  }
+
+
+
+
+  // обычный заход
+
+  res.writeHead(302,{
+    Location:LINK
+  });
+
+
+  res.end();
 
 
 }
