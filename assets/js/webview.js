@@ -41,7 +41,7 @@ const CONFIG = {
    * true  — скрипт попытается открыть приложение (Instagram, Telegram и т.п.)
    * false — не будет пытаться открыть в приложении, сразу будет работать fallback на веб.
    */
-  REDIRECT_IN_APP: true,
+  REDIRECT_IN_APP: false,
 
 
   /**
@@ -140,41 +140,24 @@ function showWebViewWarning() {
 }
 
 function redirectOrLoad() {
-  const { ENABLE_WEBVIEW_CHECK, REDIRECT_IN_APP, FALLBACK_TO_WEB, FALLBACK_TIMEOUT, WEBVIEW_MESSAGE, DISABLE_REDIRECT } = CONFIG;
-  const { appUrl, webUrl } = getLinks();
+  const { FALLBACK_TIMEOUT, WEBVIEW_MESSAGE, ENABLE_WEBVIEW_CHECK, DISABLE_REDIRECT } = CONFIG;
+  const { webUrl } = getLinks();
 
-  if (DISABLE_REDIRECT) {
-    return;
-  }
+  if (DISABLE_REDIRECT) return;
 
-  const ua = navigator.userAgent;
-  const isIOS = /iPhone|iPad|iPod/i.test(ua);
-  const isAndroid = /Android/i.test(ua);
-  const inWebView = ENABLE_WEBVIEW_CHECK && isWebView();
 
-  if (inWebView && WEBVIEW_MESSAGE) {
+  if (ENABLE_WEBVIEW_CHECK && isWebView()) {
     showWebViewWarning();
     return;
   }
 
-  if (REDIRECT_IN_APP && appUrl) {
-  if (isIOS) {
-    window.location.href = appUrl;
-  }
 
-  if (isAndroid) {
-    window.location.href = appUrl;
-  }
+  setTimeout(() => {
+    window.location.replace(webUrl);
+  }, 100);
 }
-  
 
-  if (FALLBACK_TO_WEB) {
-    setTimeout(() => {
-      window.location.href = webUrl;
-    }, FALLBACK_TIMEOUT);
-  }
-}
-console.log(navigator.userAgent);
+
 document.addEventListener("DOMContentLoaded", () => {
   const { webUrl } = getLinks();
   const button = document.querySelector(".button");
