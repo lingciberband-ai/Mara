@@ -1,52 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+
 <script>
 
-const LINK = "https://fansly.com/hikkimyra/t7";
-
-
-if (localStorage.getItem("from_instagram_done")) {
-
-    localStorage.removeItem("from_instagram_done");
-
-    window.location.replace(LINK);
-
-}
-else if (
-    document.referrer.includes("instagram.com") ||
-    document.referrer.includes("l.instagram.com")
-) {
-
-    localStorage.setItem("from_instagram_done","1");
-
-    document.body.innerHTML = `
-
-    <div style="
-    text-align:center;
-    padding:40px;
-    font-family:Arial;
-    ">
-
-    <h2>Open in browser</h2>
-
-    <p>
-    Tap ⋯ above<br>
-    Choose "Open in browser"
-    </p>
-
-
-    <img src="assets/gif/1.gif"
-    style="width:300px;max-width:90%">
-
-
-    </div>
-
-    `;
-
-
-}
-else {
-
-    window.location.replace(LINK);
-
-}
+window.location.href = "/api/go";
 
 </script>
+
+</body>
+</html>
