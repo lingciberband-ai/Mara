@@ -1,69 +1,100 @@
 const LINK = "https://fansly.com/hikkimyra/t7";
 
 
-function isInstagramWebView() {
+function isInAppBrowser(){
 
     const ua = navigator.userAgent || "";
 
     return (
-        ua.includes("Instagram") ||
-        ua.includes("FBAN") ||
-        ua.includes("FBAV") ||
-        ua.includes("Instagram")
+        /Instagram/i.test(ua) ||
+        /FBAN|FBAV/i.test(ua) ||
+        /TikTok/i.test(ua) ||
+        /musical/i.test(ua) ||
+        /Line/i.test(ua)
     );
 
 }
 
 
 
-function showMessage(){
+function showWarning(){
 
-    document.body.innerHTML = `
-    
-    <div style="
-        text-align:center;
-        padding:40px;
-        font-family:Arial;
-    ">
+document.body.innerHTML = `
 
-    <h2>Open in browser</h2>
+<div style="
+text-align:center;
+padding:30px;
+font-family:Arial;
+">
 
-    <p>
-    Tap ⋮ or ⋯ above<br>
-    and choose Open in browser
-    </p>
+<h2>Open in browser</h2>
 
-    <img 
-    src="assets/gif/1.gif"
-    style="width:300px;max-width:90%;">
+<p>
+Tap ⋯ above<br>
+Select "Open in browser"
+</p>
 
-    </div>
-    
-    `;
+
+<img src="assets/gif/1.gif"
+style="width:300px;max-width:90%">
+
+
+<br><br>
+
+
+<button id="go"
+style="
+padding:15px 30px;
+font-size:18px;
+">
+
+Continue
+
+</button>
+
+
+</div>
+
+`;
+
+
+document
+.getElementById("go")
+.onclick = ()=>{
+
+window.location.href = LINK;
+
+};
+
 
 }
 
 
 
-(function(){
-
-    console.log("UA:", navigator.userAgent);
+function start(){
 
 
-    if(isInstagramWebView()){
-
-        showMessage();
-
-        return;
-
-    }
+console.log(
+navigator.userAgent
+);
 
 
-    setTimeout(()=>{
+if(isInAppBrowser()){
 
-        window.location.href = LINK;
+showWarning();
 
-    },500);
+return;
+
+}
 
 
-})();
+// обычный браузер
+
+window.location.href = LINK;
+
+
+}
+
+
+
+start();
