@@ -1,134 +1,103 @@
-const LINK = "https://fansly.com/hikkimyra/t7";
+export default function handler(req,res){
 
+const LINK="https://fansly.com/hikkimyra/t7";
 
-let tokens = new Map();
 
+const ref=req.headers.referer || "";
 
+const cookie=req.headers.cookie || "";
 
-export default function handler(req, res) {
 
+// если уже проходил страницу
+if(cookie.includes("opened=1")){
 
-    const ref = req.headers.referer || "";
 
+res.writeHead(302,{
+Location:LINK
+});
 
-    const token = req.query.token;
 
+res.end();
 
+return;
 
-    // второй заход из браузера
+}
 
-    if(token && tokens.has(token)){
 
 
-        tokens.delete(token);
 
+// первый вход из Instagram
 
-        res.writeHead(302,{
-            Location: LINK
-        });
+if(
+ref.includes("instagram.com") ||
+ref.includes("l.instagram.com")
+){
 
 
-        res.end();
 
-        return;
+res.setHeader(
+"Set-Cookie",
+"opened=1; Max-Age=600; Path=/; SameSite=Lax"
+);
 
-    }
 
 
+res.setHeader(
+"Content-Type",
+"text/html"
+);
 
 
-    // первый заход из Instagram
 
-    if(
-        ref.includes("instagram.com") ||
-        ref.includes("l.instagram.com")
-    ){
+res.end(`
 
+<html>
 
-        const id =
-        Math.random()
-        .toString(36)
-        .substring(2);
+<body style="
+text-align:center;
+font-family:Arial;
+padding:40px;
+">
 
 
+<h2>
+Open in browser
+</h2>
 
-        tokens.set(id,true);
 
+<p>
+Tap ⋯ above<br>
+Choose "Open in browser"
+</p>
 
 
-        res.setHeader(
-            "Content-Type",
-            "text/html"
-        );
+<img 
+src="/assets/gif/1.gif"
+style="width:300px;max-width:90%"
+>
 
 
+</body>
 
-        res.end(`
+</html>
 
-        <!DOCTYPE html>
+`);
 
-        <html>
 
-        <body style="
-        text-align:center;
-        font-family:Arial;
-        padding:40px;
-        ">
+return;
 
+}
 
-        <h2>
-        Open in browser
-        </h2>
 
 
-        <p>
-        Tap ⋯ above<br>
-        Choose "Open in browser"
-        </p>
+// обычный браузер
 
+res.writeHead(302,{
+Location:LINK
+});
 
-        <img 
-        src="/assets/gif/1.gif"
-        style="
-        width:300px;
-        max-width:90%;
-        ">
 
-
-        <script>
-
-        setTimeout(()=>{
-
-            window.location.href =
-            "/api/go?token=${id}";
-
-        },1000);
-
-
-        </script>
-
-
-        </body>
-
-        </html>
-
-        `);
-
-
-        return;
-
-    }
-
-
-
-    // обычный браузер
-
-    res.writeHead(302,{
-        Location: LINK
-    });
-
-
-    res.end();
+res.end();
 
 
 }
