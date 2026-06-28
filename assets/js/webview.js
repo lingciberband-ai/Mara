@@ -82,8 +82,7 @@ function isWebView() {
   const isAndroidWebView = isAndroid && ua.includes("wv");
 
   const knownInApp = /(FBAN|FBAV|Instagram|Line|Twitter|LinkedIn|MicroMessenger|WebView|wv|Telegram|tiktok|TTWebView|musically)/i;
-  const fromApp = knownInApp.test(ua) || /t\.me|telegram\.org|tiktok\.com/i.test(document.referrer);
-
+  const fromApp = knownInApp.test(ua) || /t\.me|telegram\.org|tiktok\.com|vk\.com|instagram\.com/i.test(document.referrer);
   return isIOSWebView || isAndroidWebView || fromApp;
 }
 
