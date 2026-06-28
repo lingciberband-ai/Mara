@@ -75,20 +75,65 @@ const CONFIG = {
 };
 
 function isWebView() {
-
   const ua = navigator.userAgent || "";
-  
-  //alert("Текущий UA: " + ua + "\nРеферер: " + document.referrer);
-  
   const isAndroid = /Android/i.test(ua);
   const isIOS = /iPhone|iPad|iPod/i.test(ua);
+
+  // 1. ЗАЩИТА ОТ ПК: Встроенных WebView не бывает на компьютерах.
+  // Если это не iOS и не Android, сразу возвращаем false.
+  if (!isAndroid && !isIOS) {
+    return false;
+  }
+
   const isIOSWebView = isIOS && !ua.includes("Safari") && ua.includes("AppleWebKit");
   const isAndroidWebView = isAndroid && ua.includes("wv");
 
-  const knownInApp = /(FBAN|FBAV|Instagram|Line|Twitter|LinkedIn|MicroMessenger|WebView|wv|Telegram|tiktok|TTWebView|musically)/i;
+  const knownInApp = /(FBAN|FBAV|Instagram|Line|Twitter|LinkedIn|MicroMessenger|WebView|wv|Telegram|tiktok|TTWebView|musically|Viber|VK|Snapchat|Discord|YaApp)/i;
   const fromApp = knownInApp.test(ua) || /t\.me|telegram\.org|tiktok\.com|vk\.com|instagram\.com/i.test(document.referrer);
 
   return isIOSWebView || isAndroidWebView || fromApp;
+}
+
+function redirectOrLoad() {
+  const { ENABLE_WEBVIEW_CHECK, REDIRECT_IN_APP, FALLBACK_TO_WEB, FALLBACK_TIMEOUT, WEBVIEW_MESSAGE, DISABLE_REDIRECT } = CONFIG;
+  const { appUrl, webUrl } = getLinks();
+
+  if (DISABLE_REDIRECT) return;
+
+  const ua = navigator.userAgent;
+  const isIOS = /iPhone|iPad|iPod/i.test(ua);
+  const isAndroid = /Android/i.test(ua);
+  const isMobile = isIOS || isAndroid; // Проверяем, с мобилки ли сидит пользователь
+
+  const inWebView = ENABLE_WEBVIEW_CHECK && isWebView();
+
+  // Если пользователь в WebView — показываем предупреждение и ОСТАНАВЛИВАЕМ скрипт
+  if (inWebView && WEBVIEW_MESSAGE) {
+    showWebViewWarning();
+    return;
+  }
+
+  // === ЕСЛИ МЫ ЗДЕСЬ, ЗНАЧИТ ПОЛЬЗОВАТЕЛЬ В ОБЫЧНОМ БРАУЗЕРЕ ===
+
+  // 2. Логика для Компьютеров (ПК)
+  if (!isMobile) {
+    // На десктопе нет смысла открывать мобильные приложения, сразу кидаем на веб-версию
+    window.location.replace(webUrl);
+    return; 
+  }
+
+  // 3. Логика для Мобильных браузеров (Safari, Chrome и т.д.)
+  if (REDIRECT_IN_APP) {
+    // Используем replace(), чтобы страница-прокладка не засоряла историю "Назад" в браузере
+    window.location.replace(appUrl);
+  }
+
+  // Фолбэк: если приложение не установлено или ссылка не сработала, через 2 секунды кидаем на веб
+  if (FALLBACK_TO_WEB) {
+    setTimeout(() => {
+      window.location.replace(webUrl);
+    }, FALLBACK_TIMEOUT);
+  }
 }
 
 function getLinks() {
