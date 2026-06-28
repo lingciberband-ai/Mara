@@ -1,33 +1,20 @@
 const LINK = "https://fansly.com/hikkimyra/t7";
 
 
-function fromInstagram(){
+function isInstagram(){
+
+    const ref = document.referrer || "";
 
     return (
-        document.referrer.includes("instagram.com") ||
-        document.referrer.includes("l.instagram.com")
+        ref.includes("instagram.com") ||
+        ref.includes("l.instagram.com")
     );
-
-}
-
-
-
-function showedWarning(){
-
-    return localStorage.getItem("webview_warning") === "1";
 
 }
 
 
 
 function showWarning(){
-
-
-    localStorage.setItem(
-        "webview_warning",
-        "1"
-    );
-
 
     document.body.innerHTML = `
 
@@ -37,10 +24,7 @@ function showWarning(){
     font-family:Arial;
     ">
 
-    <h2>
-    Open in browser
-    </h2>
-
+    <h2>Open in browser</h2>
 
     <p>
     Tap ⋯ above<br>
@@ -53,7 +37,6 @@ function showWarning(){
     style="width:300px;max-width:90%"
     >
 
-
     </div>
 
     `;
@@ -62,20 +45,37 @@ function showWarning(){
 
 
 
-
 function start(){
 
 
     console.log("REF:", document.referrer);
-    console.log("FLAG:", showedWarning());
 
 
 
-    // если это первый заход из Instagram
-    if(
-        fromInstagram() &&
-        !showedWarning()
-    ){
+    // если это первый заход после Instagram
+    if(isInstagram()){
+
+
+        if(!sessionStorage.getItem("reloaded")){
+
+
+            sessionStorage.setItem(
+                "reloaded",
+                "1"
+            );
+
+
+            setTimeout(()=>{
+
+                location.reload();
+
+            },300);
+
+
+            return;
+
+        }
+
 
         showWarning();
 
@@ -85,13 +85,8 @@ function start(){
 
 
 
-    // если уже была показана инструкция
-    localStorage.removeItem(
-        "webview_warning"
-    );
-
-
     window.location.replace(LINK);
+
 
 }
 
