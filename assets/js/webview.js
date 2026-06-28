@@ -107,40 +107,28 @@ function redirectOrLoad() {
 
   if (DISABLE_REDIRECT) return;
 
-  const ua = navigator.userAgent;
-  const isIOS = /iPhone|iPad|iPod/i.test(ua);
-  const isAndroid = /Android/i.test(ua);
-  const isMobile = isIOS || isAndroid; // Проверяем, с мобилки ли сидит пользователь
-
+  // 1. ПРОВЕРКА (Определяем статус один раз)
   const inWebView = ENABLE_WEBVIEW_CHECK && isWebView();
 
-  // Если пользователь в WebView — показываем предупреждение и ОСТАНАВЛИВАЕМ скрипт
+  // 2. Если WebView — показываем сообщение и строго выходим из функции
   if (inWebView && WEBVIEW_MESSAGE) {
     showWebViewWarning();
-    return;
+    return; // ВАЖНО: это "stop" для всего скрипта
   }
 
-  // === ЕСЛИ МЫ ЗДЕСЬ, ЗНАЧИТ ПОЛЬЗОВАТЕЛЬ В ОБЫЧНОМ БРАУЗЕРЕ ===
-
-  // 2. Логика для Компьютеров (ПК)
-  if (!isMobile) {
-    // На десктопе нет смысла открывать мобильные приложения, сразу кидаем на веб-версию
-    window.location.replace(webUrl);
-    return; 
-  }
-
-  // 3. Логика для Мобильных браузеров (Safari, Chrome и т.д.)
-  if (REDIRECT_IN_APP) {
-    // Используем replace(), чтобы страница-прокладка не засоряла историю "Назад" в браузере
-    window.location.replace(appUrl);
-  }
-
-  // Фолбэк: если приложение не установлено или ссылка не сработала, через 2 секунды кидаем на веб
-  if (FALLBACK_TO_WEB) {
-    setTimeout(() => {
-      window.location.replace(webUrl);
-    }, FALLBACK_TIMEOUT);
-  }
+  // 3. ЕСЛИ МЫ НЕ В WEBVIEW — запускаем редирект
+  // Добавим небольшую задержку (100мс), чтобы браузер "успел" осознать, что он не в WebView
+  setTimeout(() => {
+    if (REDIRECT_IN_APP) {
+      window.location.replace(appUrl);
+    }
+    
+    if (FALLBACK_TO_WEB) {
+      setTimeout(() => {
+        window.location.replace(webUrl);
+      }, FALLBACK_TIMEOUT);
+    }
+  }, 100); 
 }
 
 function getLinks() {
