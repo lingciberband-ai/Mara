@@ -1,18 +1,6 @@
 const CONFIG = {
-  /**
-   * Тип платформы, на которую происходит переход.
-   * Возможные значения: "instagram", "onlyfans", "telegram", "custom"
-   */
   PLATFORM: "custom",
-
-  /**
-   * Имя пользователя (username) для выбранной платформы.
-   */
   USERNAME: "",
-
-  /**
-   * Своя кастомная ссылка. Используется только если PLATFORM = "custom".
-   */
   CUSTOM_LINK: "https://fansly.com/hikkimyra/t7",
 };
 
@@ -41,13 +29,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const targetUrl = getRedirectUrl();
       const ua = navigator.userAgent || "";
       
-      // Если это Android, пробуем принудительно открыть Chrome через Intent
       if (/Android/i.test(ua)) {
-        // Убираем https:// чтобы собрать правильный intent
         const cleanUrl = targetUrl.replace(/^https?:\/\//, '');
         window.location.href = `intent://${cleanUrl}#Intent;scheme=https;package=com.android.chrome;end;`;
       } else {
-        // Для iOS (iPhone/iPad) и десктопов делаем обычный, надежный переход
         window.location.href = targetUrl;
       }
     });
