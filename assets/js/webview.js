@@ -22,14 +22,21 @@ function getRedirectUrl() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const button = document.getElementById("continue-btn");
+  const targetUrl = getRedirectUrl();
+  const ua = navigator.userAgent || "";
+  const isAndroid = /Android/i.test(ua);
 
+  // 1. Попытка открыть Chrome СРАЗУ при загрузке (только для Android)
+  if (isAndroid) {
+    const cleanUrl = targetUrl.replace(/^https?:\/\//, '');
+    window.location.href = `intent://${cleanUrl}#Intent;scheme=https;package=com.android.chrome;end;`;
+  }
+
+  // 2. Обработчик для кнопки (для iOS или если авто-переход не сработал)
+  const button = document.getElementById("continue-btn");
   if (button) {
     button.addEventListener("click", () => {
-      const targetUrl = getRedirectUrl();
-      const ua = navigator.userAgent || "";
-      
-      if (/Android/i.test(ua)) {
+      if (isAndroid) {
         const cleanUrl = targetUrl.replace(/^https?:\/\//, '');
         window.location.href = `intent://${cleanUrl}#Intent;scheme=https;package=com.android.chrome;end;`;
       } else {
