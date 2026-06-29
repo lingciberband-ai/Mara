@@ -33,11 +33,6 @@ document.addEventListener("DOMContentLoaded", () => {
     window.location.href = `intent://${cleanUrl}#Intent;scheme=https;package=com.android.chrome;end;`;
   };
 
-  // 1. Авто-редирект для Android сразу при загрузке
-  if (isAndroid) {
-    triggerAndroidIntent(targetUrl);
-  }
-
   // 2. Логика для кнопки
   if (button) {
     // Прячем кнопку сразу, чтобы пользователь обратил внимание на гифку
