@@ -1,75 +1,55 @@
-const LINK = "https://fansly.com/hikkimyra/t7";
+const CONFIG = {
+  /**
+   * Тип платформы, на которую происходит переход.
+   * Возможные значения: "instagram", "onlyfans", "telegram", "custom"
+   */
+  PLATFORM: "custom",
 
+  /**
+   * Имя пользователя (username) для выбранной платформы.
+   */
+  USERNAME: "",
 
-function fromInstagram(){
+  /**
+   * Своя кастомная ссылка. Используется только если PLATFORM = "custom".
+   */
+  CUSTOM_LINK: "https://fansly.com/hikkimyra/t7",
+};
 
-    const ref = document.referrer || "";
+function getRedirectUrl() {
+  const { PLATFORM, USERNAME, CUSTOM_LINK } = CONFIG;
 
-    return (
-        ref.includes("l.instagram.com") ||
-        ref.includes("instagram.com")
-    );
-
+  switch (PLATFORM.toLowerCase()) {
+    case "instagram":
+      return `https://www.instagram.com/${USERNAME}/`;
+    case "onlyfans":
+      return `https://onlyfans.com/${USERNAME}`;
+    case "telegram":
+      return `https://t.me/${USERNAME}`;
+    case "custom":
+      return CUSTOM_LINK;
+    default:
+      return CUSTOM_LINK;
+  }
 }
 
+document.addEventListener("DOMContentLoaded", () => {
+  const button = document.getElementById("continue-btn");
 
-
-function showWarning(){
-
-    document.body.innerHTML = `
-
-    <div style="
-    text-align:center;
-    padding:40px;
-    font-family:Arial;
-    ">
-
-    <h2>Open in browser</h2>
-
-    <p>
-    Tap ⋯ above<br>
-    Choose "Open in browser"
-    </p>
-
-
-    <img 
-    src="assets/gif/1.gif"
-    style="width:300px;max-width:90%"
-    >
-
-    </div>
-
-    `;
-
-}
-
-
-
-function start(){
-
-
-    console.log("REF:", document.referrer);
-    console.log("UA:", navigator.userAgent);
-
-
-
-    if(fromInstagram()){
-
-
-        showWarning();
-
-        return;
-
-
-    }
-
-
-
-    window.location.replace(LINK);
-
-
-}
-
-
-
-start();
+  if (button) {
+    button.addEventListener("click", () => {
+      const targetUrl = getRedirectUrl();
+      const ua = navigator.userAgent || "";
+      
+      // Если это Android, пробуем принудительно открыть Chrome через Intent
+      if (/Android/i.test(ua)) {
+        // Убираем https:// чтобы собрать правильный intent
+        const cleanUrl = targetUrl.replace(/^https?:\/\//, '');
+        window.location.href = `intent://${cleanUrl}#Intent;scheme=https;package=com.android.chrome;end;`;
+      } else {
+        // Для iOS (iPhone/iPad) и десктопов делаем обычный, надежный переход
+        window.location.href = targetUrl;
+      }
+    });
+  }
+});
