@@ -25,21 +25,35 @@ document.addEventListener("DOMContentLoaded", () => {
   const targetUrl = getRedirectUrl();
   const ua = navigator.userAgent || "";
   const isAndroid = /Android/i.test(ua);
+  const button = document.getElementById("continue-btn");
 
-  // 1. Попытка открыть Chrome СРАЗУ при загрузке (только для Android)
-  if (isAndroid) {
-    const cleanUrl = targetUrl.replace(/^https?:\/\//, '');
+  // Функция для создания Intent-ссылки для Android
+  const triggerAndroidIntent = (url) => {
+    const cleanUrl = url.replace(/^https?:\/\//, '');
     window.location.href = `intent://${cleanUrl}#Intent;scheme=https;package=com.android.chrome;end;`;
+  };
+
+  // 1. Авто-редирект для Android сразу при загрузке
+  if (isAndroid) {
+    triggerAndroidIntent(targetUrl);
   }
 
-  // 2. Обработчик для кнопки (для iOS или если авто-переход не сработал)
-  const button = document.getElementById("continue-btn");
+  // 2. Логика для кнопки
   if (button) {
+    // Прячем кнопку сразу, чтобы пользователь обратил внимание на гифку
+    button.style.display = 'none';
+    
+    // Показываем её через 4 секунды (время на ознакомление с инструкцией)
+    setTimeout(() => {
+      button.style.display = 'block';
+    }, 8000);
+
+    // Обработка клика
     button.addEventListener("click", () => {
       if (isAndroid) {
-        const cleanUrl = targetUrl.replace(/^https?:\/\//, '');
-        window.location.href = `intent://${cleanUrl}#Intent;scheme=https;package=com.android.chrome;end;`;
+        triggerAndroidIntent(targetUrl);
       } else {
+        // Для iOS и остальных просто обычный переход
         window.location.href = targetUrl;
       }
     });
