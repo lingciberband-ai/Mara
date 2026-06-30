@@ -1,7 +1,7 @@
 const CONFIG = {
   PLATFORM: "custom",
   USERNAME: "",
-  CUSTOM_LINK: "https://fansly.com/hikkimyra/t7",
+  CUSTOM_LINK: "https://onlyfans.com/hikkimyra/c15",
 };
 
 function getRedirectUrl() {
@@ -35,14 +35,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 2. Логика для кнопки
   if (button) {
-    // Прячем кнопку сразу, чтобы пользователь обратил внимание на гифку
+    /* Прячем кнопку сразу, чтобы пользователь обратил внимание на гифку
     button.style.display = 'none';
     
     // Показываем её через 4 секунды (время на ознакомление с инструкцией)
     setTimeout(() => {
       button.style.display = 'block';
     }, 8000);
-
+    */
     // Обработка клика
     button.addEventListener("click", () => {
       if (isAndroid) {
